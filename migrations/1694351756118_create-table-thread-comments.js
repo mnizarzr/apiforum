@@ -23,7 +23,7 @@ exports.up = (pgm) => {
       // because that's what they say what big social media do.
       // I realize it later to be ambigious when using it in entities.
       parent_id: {
-        type: "VARCHAR50",
+        type: "VARCHAR(50)",
         default: null,
       },
       // I comply to the submission criteria
