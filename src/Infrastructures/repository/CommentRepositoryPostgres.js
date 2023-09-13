@@ -77,12 +77,15 @@ class CommentRepositoryPostgres extends CommentRepository {
   }
 
   async getCommentsWithRepliesByThreadId(threadId) {
+    // My view is that it will be handled heavily either by this backend-side (single query like below)
+    // or database server-side (multiple query to SELECT comments (parent_id = NULL), then SELECT reply (parent_id NOT NULL))
+    // I don't try the latter yet, so I'll stick to this, hoping for feedback :)))
     const query = {
       text: `SELECT c.id as id, u.username as username, c.date as date, c.content as content, c.parent_id as "parentId", c.is_deleted AS "isDeleted"
         FROM thread_comments c
         INNER JOIN users u ON u.id = c.owner
         WHERE c.thread_id = $1
-        ORDER BY c.parent_id NULLS FIRST`,
+        ORDER BY c.parent_id NULLS FIRST, c.date`,
       values: [threadId],
     };
 

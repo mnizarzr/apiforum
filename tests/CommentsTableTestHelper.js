@@ -32,6 +32,14 @@ const CommentsTableTestHelper = {
   async cleanTable() {
     await pool.query('DELETE FROM thread_comments WHERE 1=1');
   },
+
+  async cleanComments() {
+    await pool.query('DELETE FROM thread_comments WHERE parent_id IS NULL');
+  },
+
+  async cleanReplies() {
+    await pool.query('DELETE FROM thread_comments WHERE parent_id IS NOT NULL');
+  },
 };
 
 module.exports = CommentsTableTestHelper;
