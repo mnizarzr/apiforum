@@ -1,10 +1,14 @@
 exports.up = (pgm) => {
   pgm.createTable(
-    'thread_comments',
+    'thread_comment_replies',
     {
       id: {
         type: 'VARCHAR(50)',
         primaryKey: true,
+      },
+      comment_id: {
+        type: 'VARCHAR(50)',
+        notNull: true,
       },
       thread_id: {
         type: 'VARCHAR(50)',
@@ -43,6 +47,12 @@ exports.up = (pgm) => {
             onUpdate: 'CASCADE',
             onDelete: 'CASCADE',
           },
+          {
+            columns: 'comment_id',
+            references: 'thread_comments(id)',
+            onUpdate: 'CASCADE',
+            onDelete: 'CASCADE',
+          },
         ],
       },
     }
@@ -50,5 +60,5 @@ exports.up = (pgm) => {
 };
 
 exports.down = (pgm) => {
-  pgm.dropTable('thread_comments');
+  pgm.dropTable('thread_comment_replies');
 };

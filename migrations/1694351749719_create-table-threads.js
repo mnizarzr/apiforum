@@ -1,26 +1,26 @@
 exports.up = (pgm) => {
   pgm.createTable(
-    "threads",
+    'threads',
     {
       id: {
-        type: "VARCHAR(50)",
+        type: 'VARCHAR(50)',
         primaryKey: true,
       },
       title: {
-        type: "TEXT",
+        type: 'TEXT',
         notNull: true,
       },
       body: {
-        type: "TEXT",
+        type: 'TEXT',
         notNull: true,
       },
       owner: {
-        type: "VARCHAR(50)",
+        type: 'VARCHAR(50)',
         notNull: true,
       },
       date: {
-        type: "TIMESTAMP",
-        default: pgm.func("current_timestamp"),
+        type: 'TIMESTAMP',
+        default: pgm.func('current_timestamp'),
         notNull: true,
       },
     },
@@ -28,10 +28,10 @@ exports.up = (pgm) => {
       constraints: {
         foreignKeys: [
           {
-            columns: "owner",
-            references: "users(id)",
-            onDelete: "CASCADE",
-            onUpdate: "CASCADE",
+            columns: 'owner',
+            references: 'users(id)',
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE',
           },
         ],
       },
@@ -40,5 +40,5 @@ exports.up = (pgm) => {
 };
 
 exports.down = (pgm) => {
-  pgm.dropTable("threads");
+  pgm.dropTable('threads');
 };
