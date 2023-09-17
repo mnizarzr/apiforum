@@ -1,7 +1,8 @@
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
+const ReplyRepository = require('../../../Domains/replies/ReplyRepository');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
-const AddedComment = require('../../../Domains/comments/entities/AddedComment');
-const NewReply = require('../../../Domains/comments/entities/NewReply');
+const AddedReply = require('../../../Domains/replies/entities/AddedReply');
+const NewReply = require('../../../Domains/replies/entities/NewReply');
 const AddReplyUseCase = require('../AddReplyUseCase');
 
 describe('AddReplyUseCase', () => {
@@ -13,7 +14,7 @@ describe('AddReplyUseCase', () => {
       owner: 'user-123',
     };
 
-    const mockedAddedReply = new AddedComment({
+    const mockedAddedReply = new AddedReply({
       id: 'reply-123',
       content: useCasePayload.content,
       owner: useCasePayload.owner,
@@ -21,21 +22,29 @@ describe('AddReplyUseCase', () => {
 
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
+    const mockReplyRepository = new ReplyRepository();
 
     mockThreadRepository.verifyAvailableThread = jest.fn(() => Promise.resolve());
     mockCommentRepository.verifyAvailableComment = jest.fn(() => Promise.resolve());
-    mockCommentRepository.addReply = jest.fn(() => Promise.resolve(mockedAddedReply));
+    mockReplyRepository.addReply = jest.fn(() => Promise.resolve(mockedAddedReply));
 
     const addReplyUseCase = new AddReplyUseCase({
       threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
+      replyRepository: mockReplyRepository,
     });
 
     const addedReply = await addReplyUseCase.execute(useCasePayload);
 
-    expect(addedReply).toStrictEqual(mockedAddedReply);
+    expect(addedReply).toStrictEqual(
+      new AddedReply({
+        id: 'reply-123',
+        content: useCasePayload.content,
+        owner: useCasePayload.owner,
+      })
+    );
     expect(mockThreadRepository.verifyAvailableThread).toBeCalledWith(useCasePayload.threadId);
     expect(mockCommentRepository.verifyAvailableComment).toBeCalledWith(useCasePayload.commentId);
-    expect(mockCommentRepository.addReply).toBeCalledWith(new NewReply(useCasePayload));
+    expect(mockReplyRepository.addReply).toBeCalledWith(new NewReply(useCasePayload));
   });
 });

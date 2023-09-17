@@ -3,7 +3,7 @@ const NewReply = require('../NewReply');
 describe('a NewReply entity', () => {
   it('should throw error when payload did not contain needed property', () => {
     const payload = {
-      threadId: 'threa-abc123',
+      threadId: 'thread-abc123',
       content: 'pertamax',
       owner: 'usre-abc123',
     };

@@ -78,14 +78,13 @@ describe('ThreadRepositoryPostgres', () => {
 
       const thread = await threadRepositoryPostgres.getThreadById(newThread.id);
       expect(thread).toStrictEqual(
-        new Thread({
+        {
           id: newThread.id,
           title: newThread.title,
           body: newThread.body,
           date: newThread.date,
           username: newUser.username,
-          comments: [],
-        })
+        }
       );
     });
   });

@@ -4,10 +4,8 @@ const Comment = require('../../Domains/comments/entities/Comment');
 
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const AuthorizationError = require('../../Commons/exceptions/AuthorizationError');
-const Reply = require('../../Domains/comments/entities/Reply');
 
 const COMMENT = 'comment';
-const REPLY = 'reply';
 
 class CommentRepositoryPostgres extends CommentRepository {
   constructor(pool, idGenerator) {
@@ -22,8 +20,8 @@ class CommentRepositoryPostgres extends CommentRepository {
     const date = new Date();
 
     const query = {
-      text: 'INSERT INTO thread_comments VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id, content, owner',
-      values: [id, content, threadId, owner, null, date, false],
+      text: 'INSERT INTO thread_comments VALUES($1, $2, $3, $4, $5, $6) RETURNING id, content, owner',
+      values: [id, threadId, owner, content, date, false],
     };
 
     const result = await this._pool.query(query);
@@ -76,16 +74,12 @@ class CommentRepositoryPostgres extends CommentRepository {
     }
   }
 
-  async getCommentsWithRepliesByThreadId(threadId) {
-    // My view is that it will be handled heavily either by this backend-side (single query like below)
-    // or database server-side (multiple query to SELECT comments (parent_id = NULL), then SELECT reply (parent_id NOT NULL))
-    // I don't try the latter yet, so I'll stick to this, hoping for feedback :)))
+  async getCommentsByThreadId(threadId) {
     const query = {
-      text: `SELECT c.id as id, u.username as username, c.date as date, c.content as content, c.parent_id as "parentId", c.is_deleted AS "isDeleted"
+      text: `SELECT c.id AS id, u.username AS username, c.owner AS owner, c.thread_id AS "threadId", c.date AS date, c.content AS content, c.is_deleted AS "isDeleted"
         FROM thread_comments c
         INNER JOIN users u ON u.id = c.owner
-        WHERE c.thread_id = $1
-        ORDER BY c.parent_id NULLS FIRST, c.date`,
+        WHERE c.thread_id = $1`,
       values: [threadId],
     };
 
@@ -95,59 +89,9 @@ class CommentRepositoryPostgres extends CommentRepository {
       return [];
     }
 
-    return this._groupRepliesIntoComment(result.rows);
-  }
-
-  _groupRepliesIntoComment(commentsOrReplies) {
-    // how to test this
-    const commentWithReplies = [];
-    commentsOrReplies.forEach((row) => {
-      if (!row.parentId) {
-        commentWithReplies.push(
-          new Comment({
-            ...row,
-            replies: [],
-          })
-        );
-      } else {
-        const parentCommentIdx = commentWithReplies.findIndex((comment) => comment.id === row.parentId);
-        commentWithReplies[parentCommentIdx].replies.push(
-          new Reply({
-            ...row,
-          })
-        );
-      }
-    });
-
-    return commentWithReplies;
-  }
-
-  async addReply(newReply) {
-    const { threadId, commentId: parentId, content, owner } = newReply;
-    const id = `${REPLY}-${this._idGenerator()}`;
-    const date = new Date();
-
-    const query = {
-      text: 'INSERT INTO thread_comments VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id, content, owner',
-      values: [id, content, threadId, owner, parentId, date, false],
-    };
-
-    const result = await this._pool.query(query);
-
-    return new AddedComment({ ...result.rows[0] });
-  }
-
-  async deleteReplyById(threadId, parentId, id) {
-    const query = {
-      text: 'UPDATE thread_comments SET is_deleted = true WHERE thread_id = $1 AND parent_id = $2 AND id = $3 RETURNING id',
-      values: [threadId, parentId, id],
-    };
-
-    const result = await this._pool.query(query);
-
-    if (result.rowCount === 0) {
-      throw new NotFoundError('Reply not found');
-    }
+    // Tidak saya map untuk jadi entity karena disarankan
+    // reviewer sebelumnya untuk mengorkestrasi di use case
+    return result.rows;
   }
 }
 

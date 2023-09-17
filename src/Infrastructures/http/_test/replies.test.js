@@ -1,5 +1,6 @@
 const AuthenticationsTableTestHelper = require('../../../../tests/AuthenticationsTableTestHelper');
 const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
+const RepliesTableTestHelper = require('../../../../tests/RepliesTableTestHelper');
 const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const container = require('../../container');
@@ -44,7 +45,7 @@ describe('/threads/{threadId}/comments/{commentId}/replies endpoint', () => {
   });
 
   afterEach(async () => {
-    await CommentsTableTestHelper.cleanReplies();
+    await RepliesTableTestHelper.cleanTable();
   });
 
   describe('POST /threads/{threadId}/comments/{commentId}/replies', () => {
@@ -221,7 +222,7 @@ describe('/threads/{threadId}/comments/{commentId}/replies endpoint', () => {
       });
 
       const responseJson = JSON.parse(response.payload);
-      const [deleteReply] = await CommentsTableTestHelper.findCommentsById(replyData.addedReply.id);
+      const [deleteReply] = await RepliesTableTestHelper.findRepliesById(replyData.addedReply.id);
 
       expect(response.statusCode).toEqual(200);
       expect(responseJson.status).toEqual('success');
@@ -313,10 +314,10 @@ describe('/threads/{threadId}/comments/{commentId}/replies endpoint', () => {
       const server = await createServer(container);
 
       await UsersTableTestHelper.addUser({ id: 'user-xyz789', username: 'commenter10' });
-      await CommentsTableTestHelper.addComment({
+      await RepliesTableTestHelper.addReply({
         id: 'reply-xyz789',
         threadId: 'thread-abc123',
-        parentId: 'comment-abc123',
+        commentId: 'comment-abc123',
         owner: 'user-xyz789',
       });
 

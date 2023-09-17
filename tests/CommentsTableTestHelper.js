@@ -7,13 +7,12 @@ const CommentsTableTestHelper = {
     content = 'pertamax',
     threadId = 'thread-abc123',
     owner = 'user-abc123',
-    parentId = null,
     date = new Date(),
     isDeleted = false,
   }) {
     const query = {
-      text: 'INSERT INTO thread_comments VALUES($1, $2, $3, $4, $5, $6, $7)',
-      values: [id, content, threadId, owner, parentId, date, isDeleted],
+      text: 'INSERT INTO thread_comments VALUES($1, $2, $3, $4, $5, $6)',
+      values: [id, threadId, owner, content, date, isDeleted],
     };
 
     await pool.query(query);
@@ -31,15 +30,7 @@ const CommentsTableTestHelper = {
 
   async cleanTable() {
     await pool.query('DELETE FROM thread_comments WHERE 1=1');
-  },
-
-  async cleanComments() {
-    await pool.query('DELETE FROM thread_comments WHERE parent_id IS NULL');
-  },
-
-  async cleanReplies() {
-    await pool.query('DELETE FROM thread_comments WHERE parent_id IS NOT NULL');
-  },
+  }
 };
 
 module.exports = CommentsTableTestHelper;

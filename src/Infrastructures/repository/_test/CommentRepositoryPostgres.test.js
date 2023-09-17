@@ -6,9 +6,6 @@ const pool = require('../../database/postgres/pool');
 
 const NewComment = require('../../../Domains/comments/entities/NewComment');
 const AddedComment = require('../../../Domains/comments/entities/AddedComment');
-const Comment = require('../../../Domains/comments/entities/Comment');
-const NewReply = require('../../../Domains/comments/entities/NewReply');
-const Reply = require('../../../Domains/comments/entities/Reply');
 
 const CommentRepositoryPostgres = require('../CommentRepositoryPostgres');
 
@@ -105,9 +102,9 @@ describe('CommentRepositoryPostgres', () => {
 
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, null);
 
-      await expect(
-        commentRepositoryPostgres.verifyCommentOwner('comment-abc123', 'user-abc789')
-      ).rejects.toThrowError(AuthorizationError);
+      await expect(commentRepositoryPostgres.verifyCommentOwner('comment-abc123', 'user-abc789')).rejects.toThrowError(
+        AuthorizationError
+      );
     });
 
     it('should not throw AuthorizationError when comment or reply is available', async () => {
@@ -148,158 +145,37 @@ describe('CommentRepositoryPostgres', () => {
     });
   });
 
-  describe('getCommentsWithRepliesByThreadId method', () => {
+  describe('getCommentsByThreadId method', () => {
     it("should return empty array when thread don't have any comment", async () => {
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, null);
 
-      await expect(commentRepositoryPostgres.getCommentsWithRepliesByThreadId('thread-abc123')).resolves.toEqual([]);
+      await expect(commentRepositoryPostgres.getCommentsByThreadId('thread-abc123')).resolves.toEqual([]);
     });
-
-    it("should return thread's comments and replies when available", async () => {
-      const ts1 = new Date();
-      ts1.setMinutes(1, 1);
-      const ts2 = new Date();
-      ts2.setMinutes(1, 2);
-      const ts3 = new Date();
-      ts3.setMinutes(2);
-      const ts4 = new Date();
-      ts4.setMinutes(3);
+    it("should return thread's comment when available", async () => {
+      const ts = new Date();
 
       await CommentsTableTestHelper.addComment({
         id: 'comment-abc123',
         threadId: 'thread-abc123',
         owner: 'user-abc123',
-        date: ts1,
-      });
-
-      await CommentsTableTestHelper.addComment({
-        id: 'comment-abc456',
-        threadId: 'thread-abc123',
-        owner: 'user-abc123',
-        content: 'keduax',
-        date: ts2,
-        isDeleted: true,
-      });
-
-      await CommentsTableTestHelper.addComment({
-        id: 'reply-123',
-        threadId: 'thread-abc123',
-        owner: 'user-abc789',
-        content: 'udahgan',
-        parentId: 'comment-abc456',
-        date: ts3,
-      });
-
-      await CommentsTableTestHelper.addComment({
-        id: 'reply-456',
-        threadId: 'thread-abc123',
-        owner: 'user-abc123',
-        parentId: 'comment-abc456',
-        content: 'okok',
-        date: ts4,
-        isDeleted: true,
+        content: 'pertamax',
+        date: ts,
       });
 
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, null);
 
-      const commentsWithReplies = await commentRepositoryPostgres.getCommentsWithRepliesByThreadId('thread-abc123');
+      const comments = await commentRepositoryPostgres.getCommentsByThreadId('thread-abc123');
 
-      expect(commentsWithReplies).toStrictEqual([
-        new Comment({
+      expect(comments).toMatchObject([
+        {
           id: 'comment-abc123',
+          threadId: 'thread-abc123',
+          owner: 'user-abc123',
           content: 'pertamax',
-          username: 'commenter1',
-          date: ts1,
-          replies: [],
+          date: ts,
           isDeleted: false,
-        }),
-        new Comment({
-          id: 'comment-abc456',
-          content: '**komentar telah dihapus**',
-          username: 'commenter1',
-          date: ts2,
-          replies: [
-            new Reply({
-              id: 'reply-123',
-              content: 'udahgan',
-              date: ts3,
-              username: 'commenter2',
-              isDeleted: false,
-            }),
-            new Reply({
-              id: 'reply-456',
-              content: '**balasan telah dihapus**',
-              date: ts4,
-              username: 'commenter1',
-              isDeleted: true,
-            }),
-          ],
-          isDeleted: true,
-        }),
+        },
       ]);
-    });
-  });
-
-  describe('addReply method', () => {
-    it('should persist new reply and return added reply properly', async () => {
-      await CommentsTableTestHelper.addComment({
-        id: 'comment-abc123',
-        threadId: 'thread-abc123',
-        owner: 'user-abc123',
-      });
-
-      const newReply = new NewReply({
-        threadId: 'thread-abc123',
-        commentId: 'comment-abc123',
-        content: 'kedua',
-        owner: 'user-abc789',
-      });
-
-      const fakeIdGenerator = () => 'abc123';
-      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeIdGenerator);
-
-      const addedReply = await commentRepositoryPostgres.addReply(newReply);
-
-      const comments = await CommentsTableTestHelper.findCommentsById('reply-abc123');
-
-      expect(comments).toHaveLength(1);
-      expect(addedReply).toStrictEqual(
-        new AddedComment({
-          id: 'reply-abc123',
-          content: newReply.content,
-          owner: newReply.owner,
-        })
-      );
-    });
-  });
-
-  describe('deleteReplyById method', () => {
-    it('should throw NotFoundError when reply is not available', async () => {
-      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, null);
-
-      await expect(
-        commentRepositoryPostgres.deleteReplyById('thread-xyz789', 'comment-xyz789', 'reply-xyz789')
-      ).rejects.toThrowError(NotFoundError);
-    });
-
-    it('should soft delete the reply from the storage properly', async () => {
-      await CommentsTableTestHelper.addComment({
-        id: 'comment-abc123',
-        threadId: 'thread-abc123',
-      });
-      await CommentsTableTestHelper.addComment({
-        id: 'reply-abc123',
-        threadId: 'thread-abc123',
-        parentId: 'comment-abc123',
-      });
-
-      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, null);
-
-      await commentRepositoryPostgres.deleteReplyById('thread-abc123', 'comment-abc123', 'reply-abc123');
-
-      const comments = await CommentsTableTestHelper.findCommentsById('reply-abc123');
-
-      expect(comments[0].is_deleted).toEqual(true);
     });
   });
 });

@@ -1,4 +1,5 @@
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
+const ReplyRepository = require('../../../Domains/replies/ReplyRepository');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const DeleteReplyUseCase = require('../DeleteReplyUseCase');
 
@@ -41,21 +42,25 @@ describe('DeleteReplyUseCase', () => {
 
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
+    const mockReplyRepository = new ReplyRepository();
 
     mockThreadRepository.verifyAvailableThread = jest.fn(() => Promise.resolve());
-    mockCommentRepository.verifyCommentOwner = jest.fn(() => Promise.resolve());
-    mockCommentRepository.deleteReplyById = jest.fn(() => Promise.resolve());
+    mockCommentRepository.verifyAvailableComment = jest.fn(() => Promise.resolve());
+    mockReplyRepository.verifyReplyOwner = jest.fn(() => Promise.resolve());
+    mockReplyRepository.deleteReplyById = jest.fn(() => Promise.resolve());
 
     const deleteReplyUseCase = new DeleteReplyUseCase({
       threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
+      replyRepository: mockReplyRepository,
     });
 
     await deleteReplyUseCase.execute(useCasePayload);
 
     expect(mockThreadRepository.verifyAvailableThread).toBeCalledWith(useCasePayload.threadId);
-    expect(mockCommentRepository.verifyCommentOwner).toBeCalledWith(useCasePayload.replyId, useCasePayload.owner);
-    expect(mockCommentRepository.deleteReplyById).toBeCalledWith(
+    expect(mockCommentRepository.verifyAvailableComment).toBeCalledWith(useCasePayload.commentId);
+    expect(mockReplyRepository.verifyReplyOwner).toBeCalledWith(useCasePayload.replyId, useCasePayload.owner);
+    expect(mockReplyRepository.deleteReplyById).toBeCalledWith(
       useCasePayload.threadId,
       useCasePayload.commentId,
       useCasePayload.replyId
