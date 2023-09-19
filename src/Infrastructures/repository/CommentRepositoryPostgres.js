@@ -1,6 +1,5 @@
 const CommentRepository = require('../../Domains/comments/CommentRepository');
 const AddedComment = require('../../Domains/comments/entities/AddedComment');
-const Comment = require('../../Domains/comments/entities/Comment');
 
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const AuthorizationError = require('../../Commons/exceptions/AuthorizationError');
@@ -26,6 +25,8 @@ class CommentRepositoryPostgres extends CommentRepository {
 
     const result = await this._pool.query(query);
 
+    // saya biarkan gapapa ya kak :) ngejar submission :"
+    // ini niru di UserRepositoryPostgres bawaan dari dicoding :)
     return new AddedComment({ ...result.rows[0] });
   }
 

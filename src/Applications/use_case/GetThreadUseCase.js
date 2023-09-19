@@ -14,22 +14,28 @@ class GetThreadUseCase {
     const thread = await this._threadRepository.getThreadById(useCasePayload.threadId);
     const comments = await this._commentRepository.getCommentsByThreadId(useCasePayload.threadId);
     const commentsWithReplies = [];
+
     if (comments.length > 0) {
-      await Promise.all(
-        comments.map(async (comment) => {
-          const replies = await this._replyRepository.getRepliesByCommentId(comment.id);
-          const replyEntities = [];
+      const commentIds = comments.map(comment => comment.id)
+      const replies = await this._replyRepository.getRepliesByCommentIds(commentIds)
 
-          /* istanbul ignore else */
-          if (replies.length > 0) {
-            replies.map(async (reply) => {
-              replyEntities.push(new Reply({ ...reply }));
-            });
-          }
+      const commentReplies = {};
 
-          commentsWithReplies.push(new Comment({ ...comment, replies: replyEntities }));
-        })
-      );
+      replies.forEach(reply => {
+
+        /* istanbul ignore else */
+        if (!commentReplies[reply.commentId]) {
+          commentReplies[reply.commentId] = [];
+        }
+
+        commentReplies[reply.commentId].push(new Reply({ ...reply }));
+      });
+
+      comments.forEach(comment => {
+        const repliesForComment = commentReplies[comment.id] || [];
+        commentsWithReplies.push(new Comment({ ...comment, replies: repliesForComment }))
+      });
+
     }
 
     return new Thread({ ...thread, comments: commentsWithReplies });

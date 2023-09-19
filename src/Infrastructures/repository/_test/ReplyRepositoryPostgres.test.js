@@ -134,11 +134,11 @@ describe('ReplyRepositoryPostgres', () => {
     });
   });
 
-  describe('getRepliesByCommentId method', () => {
+  describe('getRepliesByCommentIds method', () => {
     it("should return empty array when comment don't have any reply", async () => {
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, null);
 
-      await expect(replyRepositoryPostgres.getRepliesByCommentId('comment-abc123')).resolves.toEqual([]);
+      await expect(replyRepositoryPostgres.getRepliesByCommentIds(['comment-abc123'])).resolves.toEqual([]);
     });
     it("should return comment's reply when available", async () => {
       const ts = new Date();
@@ -155,7 +155,7 @@ describe('ReplyRepositoryPostgres', () => {
 
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, null);
 
-      const replies = await replyRepositoryPostgres.getRepliesByCommentId('comment-abc123');
+      const replies = await replyRepositoryPostgres.getRepliesByCommentIds(['comment-abc123']);
 
       // text: id, content, date, username, "isDeleted"
       expect(replies).toMatchObject([

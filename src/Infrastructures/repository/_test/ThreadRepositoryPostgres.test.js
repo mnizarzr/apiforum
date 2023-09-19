@@ -5,7 +5,6 @@ const NewThread = require('../../../Domains/threads/entities/NewThread');
 const AddedThread = require('../../../Domains/threads/entities/AddedThread');
 const pool = require('../../database/postgres/pool');
 const ThreadRepositoryPostgres = require('../ThreadRepositoryPostgres');
-const Thread = require('../../../Domains/threads/entities/Thread');
 
 describe('ThreadRepositoryPostgres', () => {
   afterEach(async () => {

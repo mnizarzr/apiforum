@@ -107,15 +107,7 @@ describe('GetThreadUseCase', () => {
           content: 'kedua',
           username: 'commenter2',
           date: ts,
-          replies: [
-            new Reply({
-              id: 'reply-123',
-              content: 'kedua',
-              date: ts,
-              username: 'commenter2',
-              isDeleted: false,
-            }),
-          ],
+          replies: [],
           isDeleted: false,
         }),
       ],
@@ -127,7 +119,7 @@ describe('GetThreadUseCase', () => {
 
     mockThreadRepository.getThreadById = jest.fn(() => Promise.resolve(mockedThread));
     mockCommentRepository.getCommentsByThreadId = jest.fn(() => Promise.resolve(mockedComments));
-    mockReplyRepository.getRepliesByCommentId = jest.fn(() => Promise.resolve(mockedReplies));
+    mockReplyRepository.getRepliesByCommentIds = jest.fn(() => Promise.resolve(mockedReplies));
 
     const getThreadUseCase = new GetThreadUseCase({
       threadRepository: mockThreadRepository,
@@ -142,5 +134,6 @@ describe('GetThreadUseCase', () => {
     expect(thread).toStrictEqual(expectedThread);
     expect(mockThreadRepository.getThreadById).toBeCalledWith(useCasePayload.threadId);
     expect(mockCommentRepository.getCommentsByThreadId).toBeCalledWith(useCasePayload.threadId);
+    expect(mockReplyRepository.getRepliesByCommentIds).toBeCalledWith(['comment-abc123', 'comment-abc456'])
   });
 });
