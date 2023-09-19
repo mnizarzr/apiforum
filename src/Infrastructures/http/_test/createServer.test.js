@@ -49,9 +49,8 @@ describe('HTTP server', () => {
 
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(200);
-      expect(responseJson.status).toEqual("Database is OK");
-      expect(responseJson.message).toEqual("PONG");
+      expect(responseJson.status).toEqual('Database is OK');
+      expect(responseJson.message).toEqual('PONG');
     });
   });
-
 });
