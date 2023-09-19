@@ -1,5 +1,6 @@
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
+const pool = require('../database/postgres/pool');
 const ClientError = require('../../Commons/exceptions/ClientError');
 const DomainErrorTranslator = require('../../Commons/exceptions/DomainErrorTranslator');
 const users = require('../../Interfaces/http/api/users');
@@ -55,6 +56,20 @@ const createServer = async (container) => {
       options: { container },
     },
   ]);
+
+  server.route({
+    method: 'GET',
+    path: '/ping',
+    handler: async () => {
+
+      await pool.query('SELECT 1');
+
+      return {
+        status: 'Database is OK',
+        message: 'PONG',
+      };
+    },
+  });
 
   server.ext('onPreResponse', (request, h) => {
     // mendapatkan konteks response dari request
