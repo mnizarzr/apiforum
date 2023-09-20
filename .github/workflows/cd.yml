@@ -13,12 +13,12 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
+          # username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
             cd ~/forumapi
             git pull origin main
-            npm install
-            npm run migrate up
+            bun install
+            bun run migrate up
             pm2 restart forumapi
